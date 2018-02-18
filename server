@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+
+use v5.20;
+
+use strict;
+use warnings;
+
+use Mojolicious::Lite;
+
+plugin 'JSONConfig', {
+    file => app->home->child( 'conf/server.json' ),
+};
+
+plugin 'GlueTaskmanager';
+
+# handle webhooks from github
+post 'payload' => sub {
+    my $c = shift;
+
+    # verify that request comes from github
+    my $from_github;
+    if ( !$from_github ) {
+        $c->reply->not_found;
+    }
+
+    # check if the request should be handled
+    my $repo           = '';
+    my $branch         = '';
+    my $config_key     = sprintf "%s-%s", $repo, $branch;
+    my $request_config = $c->app->config( $config_key );
+
+    if ( !$request_config ) {
+        $c->reply->not_found;
+    }
+
+    # send data to task queue
+    $c->enqueue(
+        
+    );
+};
+
+app->run;
